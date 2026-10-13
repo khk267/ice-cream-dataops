@@ -1,0 +1,42 @@
+workflowExternalId: wf_icapi_data_pipeline
+version: '1'
+workflowDefinition:
+  description: Execute the ICAPI data pipeline
+  tasks:
+    - externalId: create_asset_hierarchy
+      name: Create asset hierarchy
+      type: transformation
+      parameters:
+        transformation:
+          externalId: create_asset_hierarchy
+          concurrencyPolicy: fail
+
+    - externalId: contextualize_ts_assets
+      name: Contextualize time series with assets
+      type: transformation
+      parameters:
+        transformation:
+          externalId: contextualize_ts_assets
+          concurrencyPolicy: fail
+      dependsOn:
+        - externalId: create_asset_hierarchy
+
+    - externalId: icapi_datapoints_extractor
+      name: Extract ICAPI datapoints
+      type: function
+      parameters:
+        function:
+          externalId: icapi_datapoints_extractor
+          data: {}
+      dependsOn:
+        - externalId: contextualize_ts_assets
+
+    - externalId: oee_timeseries
+      name: Calculate OEE time series
+      type: function
+      parameters:
+        function:
+          externalId: oee_timeseries
+          data: {}
+      dependsOn:
+        - externalId: icapi_datapoints_extractor
